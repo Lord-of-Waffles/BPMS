@@ -68,7 +68,7 @@ def run_worker():
 
     client = ZeebeClient(channel)
     worker = ZeebeWorker(channel)
-
+# Later on, have all these tasks separated into own files so main.py not too long - Ben
     @worker.task(task_type="add-json-data")
     def add_json_data():
         data = {"name": "Alice", "age": 30}
