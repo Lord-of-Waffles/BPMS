@@ -20,3 +20,8 @@ Navigate to directory where you want to clone repo
     # Install required packages
     pip3 install -r requirements.txt
 
+Afterwards, create a .env in the root directory and initialise these environment variables:
+- ZEEBE_ADDRESS | This should be the address of your cluster
+- ZEEBE_CLIENT_ID | Client ID
+- ZEEBEE_CLIENT_SECRET |
+- CAMUNDA_CLOUD_REGION
