@@ -25,3 +25,13 @@ Afterwards, create a .env in the root directory and initialise these environment
 - ZEEBE_CLIENT_ID | Client ID
 - ZEEBEE_CLIENT_SECRET |
 - CAMUNDA_CLOUD_REGION
+
+## Files
+
+### main.py
+
+This file runs the flask server, connects to Zeebe and calls workers.py
+
+### workers.py
+
+This file contains all the different functions for when tasks are executed by Zeebe
