@@ -1,6 +1,6 @@
 # Description
 
-## This repository contains code intended to serveer as external tasks for a process modelled in Camunda.
+## This repository contains code intended to serve as external tasks for a process modelled in Camunda.
 
 ## Install instructions
 Instructions to setup project:
