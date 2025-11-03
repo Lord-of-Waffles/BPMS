@@ -77,11 +77,28 @@ def run_worker():
     #       return {"json_data": data}
 
     @worker.task(task_type="send-vm-request")
-    def send_vm_request(vmSize: str, vmImage: str, vmName: str):
+    def send_vm_request(vmSize: str,
+                        vmImage: str,
+                        vmName: str,
+                        highAvailability: bool,
+                        automatedBackups: bool,
+                        monitoringAlerts: bool,
+                        publicAddreess: bool,
+                        dateNeeded: str,
+                        userEmail: str):
+        
         json_data = {"VM Size": vmSize,
                     "VM Image": vmImage,
-                    "VM Name": vmName}
+                    "VM Name": vmName,
+                    "High Availability": highAvailability,
+                    "Automated Backups": automatedBackups,
+                    "Monitoring & Alerts": monitoringAlerts,
+                    "Public Address": publicAddreess,
+                    "Date Needed": dateNeeded,
+                    "Email address": userEmail}
+        
         print("Sending VM request with these parameters:", json_data)
+
         return {
             "VMRequestStatus": "SENT",
             "VMRequestID": random.randint(1,99),
