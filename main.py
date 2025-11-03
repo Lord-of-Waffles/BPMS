@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import os
+import random
 from flask import Flask, jsonify
 from pyzeebe import ZeebeClient, ZeebeWorker, create_camunda_cloud_channel
 from dotenv import load_dotenv
@@ -30,7 +31,7 @@ def start_process():
     if client is None:
         return jsonify({"error": "Zeebe client not ready yet"}), 503
 
-    process_id = "Process_15ezi0t"
+    process_id = "Process_0vfu21l"
     print(f"Starting process: {process_id}")
 
     async def _start():
@@ -69,23 +70,79 @@ def run_worker():
     client = ZeebeClient(channel)
     worker = ZeebeWorker(channel)
 # Later on, have all these tasks separated into own files so main.py not too long - Ben
-    @worker.task(task_type="add-json-data")
-    def add_json_data():
-        data = {"name": "Alice", "age": 30}
-        print("Generated JSON:", data)
-        return {"json_data": data}
+    #@worker.task(task_type="add-json-data")
+    #   def add_json_data():
+    #       data = {"name": "Alice", "age": 30}
+    #       print("Generated JSON:", data)
+    #       return {"json_data": data}
 
-    @worker.task(task_type="send-json")
-    def send_json(json_data: dict):
-        print("Sending JSON:", json_data)
+    @worker.task(task_type="send-vm-request")
+    def send_vm_request(vmSize: str, vmImage: str, vmName: str):
+        json_data = {"VM Size": vmSize,
+                    "VM Image": vmImage,
+                    "VM Name": vmName}
+        print("Sending VM request with these parameters:", json_data)
+        return {
+            "VMRequestStatus": "SENT",
+            "VMRequestID": random.randint(1,99),
+            "json_data": json_data
+        }
+
+    @worker.task(task_type="receive-vm-request")
+    def receive_vm_request(VMRequestStatus: str, VMRequestID: int, json_data: dict):
+        print(f"Received VM request with ID: {VMRequestID} & status: {VMRequestStatus}")
+        print(f"with these parameters: {json_data}")
+        return {}  
+    
+    @worker.task(task_type="validate-request")
+    def validate_request(json_data: dict, VMRequestID: int):
+        if json_data.get("VM Size"):
+            if json_data.get("VM Image"):
+                if json_data.get("VM Name"):
+                    print(f"VM Request with ID: {VMRequestID} is valid")
+                    return {"requestIsValid": 1}
+                
+    @worker.task(task_type="send-progress-update")
+    def send_progress_update(json_data: dict):
+        return {"updateText": f"Your VM called {json_data["VM Name"]} was configured correctly, and is currently being initialised. This process can take up to 10 minutes. Please be patient as we get it ready for you!"}
+    
+    @worker.task(task_type="receive-progress-update")
+    def receive_progress_update(updateText: str):
+        print(updateText)
+
+
+    @worker.task(task_type="send-vm-config")
+    def send_vm_config():
         return {}
 
-    @worker.task(task_type="receive-json")
-    def receive_json(json_data: dict):
-        print("Received JSON:", json_data)
+    @worker.task(task_type="receive-vm-config")
+    def receive_vm_config():
+        return {}
+    
+    @worker.task(task_type="start-initialisation")
+    def start_initialisation():
         return {}
 
-    print("✅ Zeebe worker started")
+    @worker.task(task_type="allocate-ram")
+    def allocate_ram():
+        return {}
+
+    @worker.task(task_type="processing-power")
+    def processing_power():
+        return {}
+
+    @worker.task(task_type="allocate-storage")
+    def allocate_storage():
+        return {}
+
+    @worker.task(task_type="send-result")
+    def send_result():
+        return 
+    {}
+    @worker.task(task_type="receive-result")
+    def receive_result():
+        return {}
+    print("Zeebe worker started")
     zeebe_loop.run_until_complete(worker.work())
 
 
