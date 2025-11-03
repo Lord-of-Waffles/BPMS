@@ -80,20 +80,14 @@ def run_worker():
     def send_vm_request(vmSize: str,
                         vmImage: str,
                         vmName: str,
-                        highAvailability: bool,
-                        automatedBackups: bool,
-                        monitoringAlerts: bool,
-                        publicAddreess: bool,
+                        additionalFeatures: list,
                         dateNeeded: str,
                         userEmail: str):
         
         json_data = {"VM Size": vmSize,
                     "VM Image": vmImage,
                     "VM Name": vmName,
-                    "High Availability": highAvailability,
-                    "Automated Backups": automatedBackups,
-                    "Monitoring & Alerts": monitoringAlerts,
-                    "Public Address": publicAddreess,
+                    "Additional Features": additionalFeatures,
                     "Date Needed": dateNeeded,
                     "Email address": userEmail}
         
