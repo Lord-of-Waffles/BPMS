@@ -2,6 +2,7 @@ import random
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from datetime import datetime
 
 
 def register_tasks(worker):
@@ -9,6 +10,8 @@ def register_tasks(worker):
     load_dotenv()
 
     client = MongoClient(os.getenv("MONGO_URI"), tlsAllowInvalidCertificates=True)
+    db = client[os.getenv("MONGO_DB")]
+
 
 
     @worker.task(task_type="send-vm-request")
@@ -119,8 +122,15 @@ def register_tasks(worker):
         return {}
 
     @worker.task(task_type="save-config-mongodb")
-    def save_config_mongodb():
+    def save_config_mongodb(json_data: dict):
         print("is this being called")
         client.admin.command('ping')
         print("succeess")
-        return {}
+        vms_collection = db['vms']
+        result = vms_collection.insert_one(json_data)
+
+        return {
+                'dbVMId': str(result.inserted_id),
+                'dbSaveSuccess': True,
+                'dbSaveTimestamp': datetime.utcnow().isoformat()
+            }
