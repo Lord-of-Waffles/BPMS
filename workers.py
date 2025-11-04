@@ -1,7 +1,15 @@
 import random
+import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
 
 def register_tasks(worker):
     # register all zeebe workers
+    load_dotenv()
+
+    client = MongoClient(os.getenv("MONGO_URI"), tlsAllowInvalidCertificates=True)
+
 
     @worker.task(task_type="send-vm-request")
     def send_vm_request(vmSize: str, vmImage: str, vmName: str, additionalFeatures: list, dateNeeded: str, userEmail: str):
@@ -108,4 +116,11 @@ def register_tasks(worker):
     @worker.task(task_type="request-is-invalid")
     def request_is_invalid(VMRequestID: int):
         print(f"Request with ID {VMRequestID} is invalid. Make sure you give your VM a name, choose a size, and choose an image. Please try again.")
+        return {}
+
+    @worker.task(task_type="save-config-mongodb")
+    def save_config_mongodb():
+        print("is this being called")
+        client.admin.command('ping')
+        print("succeess")
         return {}
