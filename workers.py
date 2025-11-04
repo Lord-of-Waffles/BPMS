@@ -1,7 +1,18 @@
 import random
+import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
+from datetime import datetime
+
 
 def register_tasks(worker):
     # register all zeebe workers
+    load_dotenv()
+
+    client = MongoClient(os.getenv("MONGO_URI"), tlsAllowInvalidCertificates=True)
+    db = client[os.getenv("MONGO_DB")]
+
+
 
     @worker.task(task_type="send-vm-request")
     def send_vm_request(vmSize: str, vmImage: str, vmName: str, additionalFeatures: list, dateNeeded: str, userEmail: str):
@@ -31,6 +42,8 @@ def register_tasks(worker):
         if json_data.get("VM Size") and json_data.get("VM Image") and json_data.get("VM Name"):
             print(f"VM Request with ID: {VMRequestID} is valid")
             return {"requestIsValid": 1}
+        else:
+            return {"requestIsValid": 0}
 
     @worker.task(task_type="send-progress-update")
     def send_progress_update(json_data: dict):
@@ -102,3 +115,22 @@ def register_tasks(worker):
               f"{json_data['VM Ram']} of RAM,\na vCPU with {json_data['VM vCPU']} \n"
               f"and {json_data['VM Storage']} of storage.")
         return {}
+    
+    @worker.task(task_type="request-is-invalid")
+    def request_is_invalid(VMRequestID: int):
+        print(f"Request with ID {VMRequestID} is invalid. Make sure you give your VM a name, choose a size, and choose an image. Please try again.")
+        return {}
+
+    @worker.task(task_type="save-config-mongodb")
+    def save_config_mongodb(json_data: dict):
+        print("is this being called")
+        client.admin.command('ping')
+        print("succeess")
+        vms_collection = db['vms']
+        result = vms_collection.insert_one(json_data)
+
+        return {
+                'dbVMId': str(result.inserted_id),
+                'dbSaveSuccess': True,
+                'dbSaveTimestamp': datetime.utcnow().isoformat()
+            }
