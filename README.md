@@ -21,10 +21,14 @@ Navigate to directory where you want to clone repo
     pip3 install -r requirements.txt
 
 Afterwards, create a .env in the root directory and initialise these environment variables:
-- ZEEBE_ADDRESS | This should be the address of your cluster
-- ZEEBE_CLIENT_ID | Client ID
-- ZEEBEE_CLIENT_SECRET |
+- ZEEBE_ADDRESS = This should be the address of your cluster
+- ZEEBE_CLIENT_ID = Client ID
+- ZEEBEE_CLIENT_SECRET 
 - CAMUNDA_CLOUD_REGION
+- MONGO_URI = mongodb+srv://bpmsvmproject_db_user:<db_password>@bpmsproject.6fzayhk.mongodb.net/?appName=BPMSProject
+- MONGO_DB = BPMS_Project
+
+Change <db_password> to your actual one
 
 ## Files
 
