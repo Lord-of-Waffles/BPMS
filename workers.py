@@ -1,9 +1,12 @@
 import random
 import os
 import csv
+import requests
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from datetime import datetime
+from flask import jsonify
+
 
 
 def register_tasks(worker):
@@ -142,3 +145,22 @@ def register_tasks(worker):
             config_writer = csv.writer(csvfile, delimiter=' ',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             config_writer.writerow(json_data)
+
+    @worker.task(task_type="get-data-centre-availability")
+    def get_data_centre_availability():
+        try:
+            # send request to node server (https://github.com/Lord-of-Waffles/BPMS_Node) 
+            response = requests.get('http://localhost:3000/availability', timeout=10)
+            response.raise_for_status()
+        
+            # parse data sent by node server
+            data = response.json()
+        
+            return {
+                'DataCentreAvailability': data  # This will be the dict with bestCentre, availability, allCentres
+            }
+        except requests.exceptions.RequestException as e:
+            return {
+                'Error': str(e),
+                'DataCentreAvailability': None
+            }
