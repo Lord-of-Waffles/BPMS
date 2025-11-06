@@ -1,5 +1,3 @@
-# main.py (or your original file)
-
 import asyncio
 import threading
 import os
