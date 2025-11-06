@@ -1,5 +1,6 @@
 import random
 import os
+import csv
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from datetime import datetime
@@ -134,3 +135,10 @@ def register_tasks(worker):
                 'dbSaveSuccess': True,
                 'dbSaveTimestamp': datetime.utcnow().isoformat()
             }
+    
+    @worker.task(task_type="save-config-csv")
+    def save_config_csv(json_data: dict):
+        with open('saved_config.csv', 'w', newline='') as csvfile:
+            config_writer = csv.writer(csvfile, delimiter=' ',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            config_writer.writerow(json_data)
