@@ -30,6 +30,10 @@ Afterwards, create a .env in the root directory and initialise these environment
 
 Change <db_password> to your actual one
 
+To be able to execute workers.py/get_data_centre_availability(), make sure you run the node server at port 3000 that it requires.
+
+Code for the node server can be found here: https://github.com/Lord-of-Waffles/BPMS_Node
+
 ## Files
 
 ### main.py
