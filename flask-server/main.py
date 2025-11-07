@@ -65,4 +65,4 @@ def run_worker():
 
 if __name__ == "__main__":
     threading.Thread(target=run_worker, daemon=True).start()
-    app.run(port=5000)
+    app.run(host='0.0.0.0', port=5000)

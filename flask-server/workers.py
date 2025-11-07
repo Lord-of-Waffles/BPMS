@@ -149,8 +149,9 @@ def register_tasks(worker):
     @worker.task(task_type="get-data-centre-availability")
     def get_data_centre_availability():
         try:
-            # send request to node server (https://github.com/Lord-of-Waffles/BPMS_Node) 
-            response = requests.get('http://localhost:3000/availability', timeout=10)
+            # send request to node server 
+            node_url = os.getenv('NODE_SERVER_URL', 'http://node-server:3000')
+            response = requests.get(f'{node_url}/availability', timeout=10)
             response.raise_for_status()
         
             # parse data sent by node server
