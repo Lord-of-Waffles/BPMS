@@ -1,0 +1,15 @@
+{
+  "name": "bpms_node",
+  "version": "1.0.0",
+  "description": "This repository contains code to run a node.js server which serves as a REST API that the Flask server from this project will send requests to: https://github.com/Lord-of-Waffles/BPMS",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
