@@ -1,0 +1,30 @@
+version: '3.0'
+
+services:
+  flask-server:
+    build: ./flask-server
+    ports:
+      - '5000:5000'
+    env_file:
+      - ./flask-server/.env
+    environment:
+      - NODE_SERVER_URL=http://node-server:3000
+    depends_on:
+      - node-server
+    networks:
+      - app-network
+    container_name:
+      - 'BPMSFlaskContainer'
+
+  node-server:
+    build: ./node-server
+    ports:
+      - '3000:3000'
+    networks:
+      - app-network
+    container_name:
+      - 'BPMSNodeContainer'
+  
+networks:
+  app-network:
+    driver: bridge
