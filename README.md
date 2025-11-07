@@ -2,25 +2,16 @@
 
 ## This repository contains code intended to serve as external tasks for a process modelled in Camunda.
 
+It consists of 2 dockerised servers, 1 written with Flask and the other with Node. To be able to run the project, please make sure the docker daemon is running on your computer.
+
 ## Install instructions
 Instructions to setup project:
-
-Disclaimer: depending on python install, you might have to use python instead of python3, or pip instead of pip3
 
 Navigate to directory where you want to clone repo
 
     git clone <repo>
 
-    # Create virtual environment
-    python3 -m venv venv
-
-    # Activate it
-    source venv/bin/activate
-
-    # Install required packages
-    pip3 install -r requirements.txt
-
-Afterwards, create a .env in the root directory and initialise these environment variables:
+Afterwards, create a .env in the flask-server directory and initialise these environment variables:
 - ZEEBE_ADDRESS = This should be the address of your cluster
 - ZEEBE_CLIENT_ID = Client ID
 - ZEEBEE_CLIENT_SECRET 
@@ -30,9 +21,9 @@ Afterwards, create a .env in the root directory and initialise these environment
 
 Change <db_password> to your actual one
 
-To be able to execute workers.py/get_data_centre_availability(), make sure you run the node server at port 3000 that it requires.
+Finally, when you're ready to launch to project, navigate to the project's root diretory and run this command in your terminal:
 
-Code for the node server can be found here: https://github.com/Lord-of-Waffles/BPMS_Node
+    docker compose up --build
 
 ## Files
 
@@ -43,3 +34,7 @@ This file runs the flask server, connects to Zeebe and calls workers.py
 ### workers.py
 
 This file contains all the different functions for when tasks are executed by Zeebe
+
+### server.js
+
+This file runs the node server, which will be called by the flask server for a specific task in the BPMS process.
