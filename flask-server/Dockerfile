@@ -4,7 +4,7 @@ WORKDIR /flask-server
 
 COPY requirements.txt
 
-run pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
