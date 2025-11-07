@@ -13,8 +13,7 @@ services:
       - node-server
     networks:
       - app-network
-    container_name:
-      - 'BPMSFlaskContainer'
+    container_name: BPMSFlaskContainer
 
   node-server:
     build: ./node-server
@@ -22,8 +21,7 @@ services:
       - '3000:3000'
     networks:
       - app-network
-    container_name:
-      - 'BPMSNodeContainer'
+    container_name: BPMSNodeContainer
   
 networks:
   app-network:
