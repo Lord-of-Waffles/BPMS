@@ -167,3 +167,7 @@ def register_tasks(worker):
                 'Error': str(e),
                 'DataCentreAvailability': None
             }
+
+    @worker.task(task_type="approve-request-to-int")
+    def approve_request_to_int(approveRequest:str):
+        return {"approveRequest": int(approveRequest)}
