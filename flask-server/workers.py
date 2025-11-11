@@ -6,6 +6,9 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from datetime import datetime
 from flask import jsonify
+from pyzeebe import Job
+from pyzeebe.errors import BusinessError
+
 
 
 
@@ -39,15 +42,23 @@ def register_tasks(worker):
     def receive_vm_request(VMRequestStatus: str, VMRequestID: int, json_data: dict):
         print(f"Received VM request with ID: {VMRequestID} & status: {VMRequestStatus}")
         print(f"with these parameters: {json_data}")
-        return {}
+        # cast data type of VMRequestID to string
+        return {"VMRequestID": str(VMRequestID)}
+
 
     @worker.task(task_type="validate-request")
-    def validate_request(json_data: dict, VMRequestID: int):
-        if json_data.get("VM Size") and json_data.get("VM Image") and json_data.get("VM Name"):
-            print(f"VM Request with ID: {VMRequestID} is valid")
-            return {"requestIsValid": 1}
-        else:
-            return {"requestIsValid": 0}
+    def validate_request(job: Job):
+        json_data = job.variables.get("json_data", {})  # Get the nested json_data object
+        VMRequestID = job.variables.get("VMRequestID")
+
+        vm_name = json_data.get("VM Name", "")
+    
+        if not vm_name or len(vm_name) < 1:
+            print(f"VM Request {VMRequestID} failed validation - missing VM Name")
+            raise BusinessError("INVALID_REQUEST")
+
+        print(f"VM Request {VMRequestID} is valid")
+        return {"ValidationStatus": "VALID"}
 
     @worker.task(task_type="send-progress-update")
     def send_progress_update(json_data: dict):
@@ -66,7 +77,7 @@ def register_tasks(worker):
         return {}
 
     @worker.task(task_type="receive-vm-config")
-    def receive_vm_config(json_data: dict, VMRequestID):
+    def receive_vm_config(json_data: dict, VMRequestID:str):
         print(f"Received VM Request ID: {VMRequestID} from App Layer with this config: {json_data}")
         return {}
 
@@ -121,7 +132,7 @@ def register_tasks(worker):
         return {}
     
     @worker.task(task_type="request-is-invalid")
-    def request_is_invalid(VMRequestID: int):
+    def request_is_invalid(VMRequestID: str):
         print(f"Request with ID {VMRequestID} is invalid. Make sure you give your VM a name, choose a size, and choose an image. Please try again.")
         return {}
 
@@ -165,3 +176,7 @@ def register_tasks(worker):
                 'Error': str(e),
                 'DataCentreAvailability': None
             }
+
+    @worker.task(task_type="approve-request-to-int")
+    def approve_request_to_int(approveRequest:str):
+        return {"approveRequest": int(approveRequest)}
