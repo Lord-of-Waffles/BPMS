@@ -44,10 +44,11 @@ def register_tasks(worker):
 
     @worker.task(task_type="validate-request")
     def validate_request(json_data: dict, VMRequestID: str):
-        if json_data.get("VM Size") and json_data.get("VM Image") and json_data.get("VM Name"):
-            print(f"VM Request with ID: {VMRequestID} is valid")
-            return {"requestIsValid": 1}
-        else:
+        try:
+            if json_data.get("VM Size") and json_data.get("VM Image") and json_data.get("VM Name"):
+                print(f"VM Request with ID: {VMRequestID} is valid")
+                return {"requestIsValid": 1}
+        except Exception as e:
             return {"requestIsValid": 0}
 
     @worker.task(task_type="send-progress-update")
