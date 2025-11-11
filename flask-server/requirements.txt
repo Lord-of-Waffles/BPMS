@@ -1,4 +1,4 @@
 flask
-pyzeebe
+pyzeebe>=3.0.0
 python-dotenv
 pymongo
