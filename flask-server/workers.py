@@ -39,10 +39,11 @@ def register_tasks(worker):
     def receive_vm_request(VMRequestStatus: str, VMRequestID: int, json_data: dict):
         print(f"Received VM request with ID: {VMRequestID} & status: {VMRequestStatus}")
         print(f"with these parameters: {json_data}")
-        return {}
+        # cast data type of VMRequestID to string
+        return {"VMRequestID": str(VMRequestID)}
 
     @worker.task(task_type="validate-request")
-    def validate_request(json_data: dict, VMRequestID: int):
+    def validate_request(json_data: dict, VMRequestID: str):
         if json_data.get("VM Size") and json_data.get("VM Image") and json_data.get("VM Name"):
             print(f"VM Request with ID: {VMRequestID} is valid")
             return {"requestIsValid": 1}
@@ -66,7 +67,7 @@ def register_tasks(worker):
         return {}
 
     @worker.task(task_type="receive-vm-config")
-    def receive_vm_config(json_data: dict, VMRequestID):
+    def receive_vm_config(json_data: dict, VMRequestID:str):
         print(f"Received VM Request ID: {VMRequestID} from App Layer with this config: {json_data}")
         return {}
 
@@ -121,7 +122,7 @@ def register_tasks(worker):
         return {}
     
     @worker.task(task_type="request-is-invalid")
-    def request_is_invalid(VMRequestID: int):
+    def request_is_invalid(VMRequestID: str):
         print(f"Request with ID {VMRequestID} is invalid. Make sure you give your VM a name, choose a size, and choose an image. Please try again.")
         return {}
 
