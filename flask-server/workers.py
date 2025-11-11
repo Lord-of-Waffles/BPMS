@@ -6,6 +6,9 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from datetime import datetime
 from flask import jsonify
+from pyzeebe import Job
+from pyzeebe.errors import BusinessError
+
 
 
 
@@ -42,14 +45,18 @@ def register_tasks(worker):
         # cast data type of VMRequestID to string
         return {"VMRequestID": str(VMRequestID)}
 
+
     @worker.task(task_type="validate-request")
-    def validate_request(json_data: dict, VMRequestID: str):
-        try:
-            if json_data.get("VM Size") and json_data.get("VM Image") and json_data.get("VM Name"):
-                print(f"VM Request with ID: {VMRequestID} is valid")
-                return {"requestIsValid": 1}
-        except Exception as e:
-            return {"requestIsValid": 0}
+    def validate_request(job: Job):
+        json_data = job.variables
+        VMRequestID = job.variables.get("VMRequestID")
+
+        if not json_data.get("VM Name") or len(json_data.get("VM Name")) < 1:
+            print(f"VM Request {VMRequestID} failed validation")
+            raise BusinessError("INVALID_REQUEST")
+
+        print(f"VM Request {VMRequestID} is valid")
+        return {"ValidationStatus": "VALID"}
 
     @worker.task(task_type="send-progress-update")
     def send_progress_update(json_data: dict):
