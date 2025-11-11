@@ -48,11 +48,13 @@ def register_tasks(worker):
 
     @worker.task(task_type="validate-request")
     def validate_request(job: Job):
-        json_data = job.variables
+        json_data = job.variables.get("json_data", {})  # Get the nested json_data object
         VMRequestID = job.variables.get("VMRequestID")
 
-        if not json_data.get("VM Name") or len(json_data.get("VM Name")) < 1:
-            print(f"VM Request {VMRequestID} failed validation")
+        vm_name = json_data.get("VM Name", "")
+    
+        if not vm_name or len(vm_name) < 1:
+            print(f"VM Request {VMRequestID} failed validation - missing VM Name")
             raise BusinessError("INVALID_REQUEST")
 
         print(f"VM Request {VMRequestID} is valid")
