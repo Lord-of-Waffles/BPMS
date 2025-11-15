@@ -1,3 +1,7 @@
+const express = require('express');
+const server = express();
+server.use(express.json());
+
 function random() {
   let randomNo = Math.floor(Math.random() * 100);
   console.log(randomNo);
@@ -11,16 +15,7 @@ function dataCentreAvailability(){
     return [centre1, centre2, centre3];
 }
 
-const express = require('express');
 
-const server = express();
-server.use(express.json());
-
-const port = 3000;
-
-server.listen(port, () => {
-    console.log(`Server listening on port: ${port}`);
-});
 
 server.get("/availability", (request, response) => {
     const dataCentres = dataCentreAvailability();
@@ -33,3 +28,11 @@ server.get("/availability", (request, response) => {
         allCentres: dataCentres
     });
 });
+
+const port = 3000;
+
+server.listen(port, () => {
+    console.log(`Server listening on port: ${port}`);
+});
+
+module.exports = app;
