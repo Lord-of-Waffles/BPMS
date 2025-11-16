@@ -19,6 +19,8 @@ services:
     build: ./node-server
     ports:
       - '3000:3000'
+    env_file:
+      - ./node-server/.env
     networks:
       - app-network
     container_name: BPMSNodeContainer
