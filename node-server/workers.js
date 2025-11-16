@@ -1,21 +1,61 @@
 const { ZBClient } = require('zeebe-node');
+const {MongoClient} = require('mongodb')
+const fs = require('fs')
+const path = require('path')
 require('dotenv').config();
 
 const zb = new ZBClient({
   camundaCloud: {
     clientId: process.env.ZEEBE_CLIENT_ID,
     clientSecret: process.env.ZEEBE_CLIENT_SECRET,
-    clusterId: process.env.ZEEBE_CLUSTER_ID,
-    region: process.env.ZEEBE_REGION || 'bru-2'
+    clusterId: process.env.ZEEBE_ADDRESS.split('.')[0], // Extract cluster ID from address
+    region: process.env.CAMUNDA_CLOUD_REGION || 'bru-2'
   }
 });
+
+// mongodb setup
+let mongoClient = null;
+let db = null;
+
+async function connectMongo() {
+    try {
+        mongoClient = new MongoClient(process.env.MONGO_URI, {
+            tlsAllowInvalidCertificates: true
+        });
+        await mongoClient.connect();
+        db = mongoClient.db(process.env.MONGO_DB);
+        console.log('Connected to MongoDB');
+    } catch (error) {
+        console.error('MongoDB connection failed:', error);
+    }
+}
+
+// Connect to MongoDB
+connectMongo();
 
 zb.createWorker({
     taskType: "start-initialisation",
     taskHandler: async (job) => {
+        const { json_data } = job.variables;
+        const dateNeeded = json_data["Date Needed"];
+        
+        // CONSTRAINT: Check if date is in the future
+        const requestedDate = new Date(dateNeeded);
+        const today = new Date();
+        const daysUntilNeeded = Math.ceil((requestedDate - today) / (1000 * 60 * 60 * 24));
+        
+        if (daysUntilNeeded < 2) {
+            return job.error(
+                'INSUFFICIENT_LEAD_TIME',
+                `VM needed in ${daysUntilNeeded} days. Minimum lead time is 2 days for provisioning.`
+            );
+        }
+        
+        console.log(`Date constraint satisfied: ${daysUntilNeeded} days lead time`);
         console.log("-=====================-");
         console.log("Initialising VM...");
-        return job.complete({});
+        
+        return job.complete({ daysUntilNeeded });
     }
 });
 
@@ -92,32 +132,85 @@ zb.createWorker({
     }
 });
 
+
+console.log("All Zeebe workers registered and ready!");
+
+// Worker 7: Save Config to MongoDB (NEW - moved from Python)
 zb.createWorker({
-    taskType: "get-data-centre-availability",
+    taskType: "save-config-mongodb",
     taskHandler: async (job) => {
-        console.log("Checking data centre availability...");
+        const { json_data } = job.variables;
         
-        const dataCentres = [
-            Math.floor(Math.random() * 100),
-            Math.floor(Math.random() * 100),
-            Math.floor(Math.random() * 100)
-        ];
+        console.log("Saving configuration to MongoDB...");
         
-        const bestCentreAvailability = Math.max(...dataCentres);
-        const bestCentreIndex = dataCentres.indexOf(bestCentreAvailability);
-        
-        const availability = {
-            bestCentre: bestCentreIndex + 1,
-            availability: bestCentreAvailability,
-            allCentres: dataCentres
-        };
-        
-        console.log(`Best centre: ${availability.bestCentre} (${availability.availability}% available)`);
-        
-        return job.complete({ DataCentreAvailability: availability });
+        try {
+            if (!db) {
+                throw new Error('MongoDB not connected');
+            }
+            
+            // Ping MongoDB
+            await db.admin().ping();
+            console.log("✓ MongoDB connection verified");
+            
+            // Insert document
+            const vmsCollection = db.collection('vms');
+            const result = await vmsCollection.insertOne(json_data);
+            
+            console.log(`Saved to MongoDB with ID: ${result.insertedId}`);
+            
+            return job.complete({
+                dbVMId: result.insertedId.toString(),
+                dbSaveSuccess: true,
+                dbSaveTimestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('MongoDB save failed:', error);
+            return job.fail(`Failed to save to MongoDB: ${error.message}`);
+        }
     }
 });
 
-console.log("All Zeebe workers registered and ready!");
+zb.createWorker({
+    taskType: "save-config-csv",
+    taskHandler: async (job) => {
+        const { json_data } = job.variables;
+        
+        console.log("Saving configuration to CSV...");
+        
+        try {
+            const csvPath = path.join(__dirname, 'saved_config.csv');
+            
+            // Convert object to CSV format (simple implementation)
+            // Format: key|value pairs separated by spaces
+            const csvRow = Object.entries(json_data)
+                .map(([key, value]) => {
+                    // Handle arrays and objects
+                    if (Array.isArray(value)) {
+                        return `${key}|${value.join(',')}`;
+                    } else if (typeof value === 'object') {
+                        return `${key}|${JSON.stringify(value)}`;
+                    }
+                    return `${key}|${value}`;
+                })
+                .join(' ');
+            
+            // Write to CSV file (overwrites existing file)
+            fs.writeFileSync(csvPath, csvRow + '\n', 'utf8');
+            
+            console.log(`Saved to CSV at: ${csvPath}`);
+            
+            return job.complete({
+                csvSaveSuccess: true,
+                csvPath: csvPath
+            });
+            
+        } catch (error) {
+            console.error('CSV save failed:', error);
+            return job.fail(`Failed to save to CSV: ${error.message}`);
+        }
+    }
+});
+    
 
 module.exports = zb;
