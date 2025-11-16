@@ -16,10 +16,19 @@ Afterwards, create a .env in the flask-server directory and initialise these env
 - ZEEBE_CLIENT_ID = Client ID
 - ZEEBEE_CLIENT_SECRET 
 - CAMUNDA_CLOUD_REGION
+
+You'll also need a 2nd .env, but this time for the node server. Navigate to the node-server directory and create a .env file with these environment variables
+- ZEEBE_ADDRESS= same as flask server
+- ZEEBE_CLIENT_ID= same as flask server
+- ZEEBE_CLIENT_SECRET= same as flask server
+- ZEEBE_CLUSTER_ID= can find this from camunda
+- ZEEBE_REGION= same as CAMUNDA_CLOUD_REGION
 - MONGO_URI = mongodb+srv://bpmsvmproject_db_user:<db_password>@bpmsproject.6fzayhk.mongodb.net/?appName=BPMSProject
 - MONGO_DB = BPMS_Project
 
 Change <db_password> to your actual one
+
+
 
 Finally, when you're ready to launch to project, navigate to the project's root diretory and run this command in your terminal:
 
