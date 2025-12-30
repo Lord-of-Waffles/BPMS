@@ -4,6 +4,9 @@
 
 It consists of 2 dockerised servers, 1 written with Flask and the other with Node. To be able to run the project, please make sure the docker daemon is running on your computer.
 
+<img width="7890" height="2910" alt="Provision   Initialise" src="https://github.com/user-attachments/assets/ae4340b5-2d16-49c0-afa2-f332b2d07473" />
+
+
 ## Install instructions
 Instructions to setup project:
 
